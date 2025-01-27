@@ -1,0 +1,22 @@
+{
+  "name": "sergiofores-art-portfolio",
+  "version": "1.0.0",
+  "description": "Portfolio artístico de Sergio Fores",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "art",
+    "portfolio",
+    "oil painting",
+    "3d printing"
+  ],
+  "author": "Sergio Fores",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
