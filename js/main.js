@@ -172,6 +172,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Video handling
+    function handleVideo(videoElement) {
+        const container = videoElement.closest('.artwork-video');
+        
+        // Loading state
+        container.classList.add('loading');
+        
+        // Remove loading state when metadata is loaded
+        videoElement.addEventListener('loadedmetadata', () => {
+            container.classList.remove('loading');
+        }, { once: true });
+
+        // Handle video errors
+        videoElement.addEventListener('error', (e) => {
+            console.error('Error loading video:', e);
+            container.innerHTML = `
+                <div class="video-error">
+                    <p>Error al cargar el video. Por favor, intenta más tarde.</p>
+                </div>
+            `;
+        }, { once: true });
+
+        // Clean up resources when video is not visible
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting && !videoElement.paused) {
+                    videoElement.pause();
+                }
+            });
+        }, {
+            threshold: 0.2
+        });
+        
+        observer.observe(videoElement);
+
+        // Pause video when switching tabs
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && !videoElement.paused) {
+                videoElement.pause();
+            }
+        });
+
+        // Memory management
+        videoElement.addEventListener('pause', () => {
+            videoElement.removeAttribute('src');
+            videoElement.load();
+        });
+
+        return videoElement;
+    }
+
     // Gallery functionality
     function createGallery() {
         const galleryGrid = document.querySelector('.gallery-grid');
@@ -192,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             preload="metadata"
                             playsinline
                             controlsList="nodownload"
-                            onplay="handleVideoPlay(this)"
+                            poster="/images/video-poster.jpg"
                         >
                             <source src="${artwork.videoUrl}" type="video/mp4">
                             Tu navegador no soporta el elemento video.
@@ -203,6 +254,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p>${artwork.description}</p>
                     </div>
                 `;
+                const video = card.querySelector('video');
+                if (video) {
+                    handleVideo(video);
+                }
             } else {
                 const imgSrc = artwork.image || '/images/placeholder.png';
                 card.innerHTML = `
@@ -375,4 +430,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Back to Top functionality
+    const backToTopButton = document.getElementById('back-to-top');
+    
+    function toggleBackToTop() {
+        if (window.scrollY > 300) {
+            backToTopButton.classList.add('visible');
+        } else {
+            backToTopButton.classList.remove('visible');
+        }
+    }
+
+    window.addEventListener('scroll', toggleBackToTop);
+    
+    backToTopButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+
+    // Initial check for back to top button
+    toggleBackToTop();
 });
