@@ -17,7 +17,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css" integrity="sha256-CTSx/A06dm1B063156EVh15m6Y67pAjZZaQc89LLSrU=" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <nav class="main-nav">
@@ -63,33 +63,26 @@
                 </div>
             </div>
         </section>
-
-        <section class="contact" id="contacto">
-            <div class="content-container">
-                <h2>Contacto</h2>
-                <div class="social-links">
-                    <a href="https://www.instagram.com/sergio.01234/" target="_blank" class="social-link instagram">
-                        <i class="fab fa-instagram"></i>
-                        <span>@sergio.01234</span>
-                    </a>
-                </div>
-            </div>
-        </section>
     </main>
 
-    <footer>
-        <div class="content-container">
-            <div class="footer-content">
-                <p>&copy; 2025 Sergio Fores. Todos los derechos reservados.</p>
-                <div class="footer-social">
-                    <a href="https://www.instagram.com/sergio.01234/" target="_blank" class="social-link">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                </div>
+    <footer id="contacto" class="footer">
+        <div class="footer-content">
+            <h2>Contacto</h2>
+            <p>¿Interesado en mi trabajo? Contáctame a través de:</p>
+            <div class="social-links">
+                <a href="https://instagram.com/sergiofores.art" target="_blank" rel="noopener noreferrer">
+                    <i class="fab fa-instagram"></i>
+                    @sergio.01234
+                </a>
             </div>
+            <p class="copyright">&copy; <span id="currentYear"></span> Sergio Forés</p>
         </div>
     </footer>
 
     <script type="module" src="./js/main.js"></script>
+    <script>
+        const currentYear = document.getElementById('currentYear');
+        currentYear.textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>
