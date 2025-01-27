@@ -13,11 +13,10 @@ Este es un portfolio creativo inspirado en el diseño minimalista y elegante de 
 ## Tecnologías Utilizadas
 
 - HTML5
-- CSS3 (con variables CSS personalizadas)
-- JavaScript vanilla
-- Vite (servidor de desarrollo)
-- Fuentes de Google Fonts (Inter)
+- CSS3 (con variables CSS y diseño responsive)
+- JavaScript (ES6+)
 - Font Awesome para iconos
+- System Fonts para una carga rápida y consistente
 
 ## Estructura del Proyecto
 
