@@ -385,7 +385,7 @@ class Gallery {
                                     <source src="${videoUrl}" type="video/mp4">
                                 </video>
                                 <div class="video-overlay">
-                                    <i class="fas fa-play"></i>
+                                    <span class="play-button">▶</span>
                                 </div>
                             </div>
                             <div class="artwork-info">

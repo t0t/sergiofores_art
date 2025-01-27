@@ -15,7 +15,6 @@ Este es un portfolio creativo inspirado en el diseño minimalista y elegante de 
 - HTML5
 - CSS3 (con variables CSS y diseño responsive)
 - JavaScript (ES6+)
-- Font Awesome para iconos
 - System Fonts para una carga rápida y consistente
 
 ## Estructura del Proyecto
