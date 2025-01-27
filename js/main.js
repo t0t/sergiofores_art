@@ -31,133 +31,168 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // All artwork data
     const artworks = [
+        // Video presentación
+        {
+            title: 'Obra Plástica I',
+            description: 'Presentación Narrada',
+            type: 'video',
+            videoUrl: 'videos/Sergio Forés - Obra Plástica I (Presentación Narrada).mp4',
+            category: '3d'
+        },
         // Óleos
         {
             title: 'Autoocultamiento',
             description: 'Óleo sobre lienzo',
-            image: './images/projects/oil/autoocultamiento.png',
+            image: 'images/projects/oil/autoocultamiento.png',
             category: 'pinturas'
         },
         {
             title: 'Beraja',
             description: 'Óleo sobre lienzo',
-            image: './images/projects/oil/beraja.png',
+            image: 'images/projects/oil/beraja.png',
             category: 'pinturas'
         },
         {
             title: 'Luz',
             description: 'Óleo sobre lienzo',
-            image: './images/projects/oil/luz2.png',
+            image: 'images/projects/oil/luz2.png',
             category: 'pinturas'
         },
         {
             title: 'Mente Acústica Literal',
             description: 'Óleo sobre lienzo',
-            image: './images/projects/oil/menteacusticaliteral1.png',
+            image: 'images/projects/oil/menteacusticaliteral1.png',
             category: 'pinturas'
         },
         {
             title: 'Proceso I',
             description: 'Óleo sobre lienzo',
-            image: './images/projects/oil/proceso2.png',
+            image: 'images/projects/oil/proceso2.png',
             category: 'pinturas'
         },
         {
             title: 'Proceso II',
             description: 'Óleo sobre lienzo',
-            image: './images/projects/oil/proceso3.png',
+            image: 'images/projects/oil/proceso3.png',
             category: 'pinturas'
         },
         {
             title: 'Shejina',
             description: 'Óleo sobre lienzo',
-            image: './images/projects/oil/shejina.png',
+            image: 'images/projects/oil/shejina.png',
             category: 'pinturas'
         },
         {
             title: 'Tres',
             description: 'Óleo sobre lienzo',
-            image: './images/projects/oil/tres1.png',
+            image: 'images/projects/oil/tres1.png',
             category: 'pinturas'
         },
         {
             title: '291224',
             description: 'Óleo sobre lienzo',
-            image: './images/projects/oil/291224a.png',
+            image: 'images/projects/oil/291224a.png',
             category: 'pinturas'
         },
         {
             title: '2911',
             description: 'Óleo sobre lienzo',
-            image: './images/projects/oil/2911a.png',
+            image: 'images/projects/oil/2911a.png',
             category: 'pinturas'
         },
         // 3D Prints
         {
             title: 'Escultura Digital 1',
             description: 'Impresión 3D en PLA',
-            image: './images/projects/3dprinting/IMG_0864.JPG',
+            image: 'images/projects/3dprinting/IMG_0864.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 2',
             description: 'Impresión 3D en PLA',
-            image: './images/projects/3dprinting/IMG_0869.JPG',
+            image: 'images/projects/3dprinting/IMG_0869.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 3',
             description: 'Impresión 3D en PLA',
-            image: './images/projects/3dprinting/IMG_0943.jpg',
+            image: 'images/projects/3dprinting/IMG_0943.jpg',
             category: '3d'
         },
         {
             title: 'Escultura Digital 4',
             description: 'Impresión 3D en PLA',
-            image: './images/projects/3dprinting/IMG_7883.JPG',
+            image: 'images/projects/3dprinting/IMG_7883.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 5',
             description: 'Impresión 3D en PLA',
-            image: './images/projects/3dprinting/IMG_8631.JPG',
+            image: 'images/projects/3dprinting/IMG_8631.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 6',
             description: 'Impresión 3D en PLA',
-            image: './images/projects/3dprinting/3955C791-B166-42B0-AA5B-065B6CBC2DC0.JPG',
+            image: 'images/projects/3dprinting/3955C791-B166-42B0-AA5B-065B6CBC2DC0.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 7',
             description: 'Impresión 3D en PLA',
-            image: './images/projects/3dprinting/87368654_498661417692348_2165792891719385088_o.jpg',
+            image: 'images/projects/3dprinting/87368654_498661417692348_2165792891719385088_o.jpg',
             category: '3d'
         }
     ];
 
     // Gallery functionality
-    function createArtworkCard(artwork) {
-        const card = document.createElement('div');
-        card.className = 'artwork-card';
-        card.dataset.category = artwork.category;
-        card.innerHTML = `
-            <div class="artwork-image">
-                <img src="${artwork.image}" alt="${artwork.title}" loading="lazy">
-            </div>
-            <div class="artwork-info">
-                <h3>${artwork.title}</h3>
-                <p>${artwork.description}</p>
-            </div>
-        `;
-        return card;
+    function createGallery() {
+        const galleryGrid = document.querySelector('.gallery-grid');
+        galleryGrid.innerHTML = '';
+
+        artworks.forEach(artwork => {
+            const card = document.createElement('div');
+            card.className = 'artwork-card';
+            card.dataset.category = artwork.category;
+
+            if (artwork.type === 'video') {
+                card.innerHTML = `
+                    <div class="artwork-video">
+                        <video controls preload="metadata">
+                            <source src="${artwork.videoUrl}" type="video/mp4">
+                            Tu navegador no soporta el elemento video.
+                        </video>
+                    </div>
+                    <div class="artwork-info">
+                        <h3>${artwork.title}</h3>
+                        <p>${artwork.description}</p>
+                    </div>
+                `;
+            } else {
+                card.innerHTML = `
+                    <div class="artwork-image">
+                        <img src="${artwork.image}" alt="${artwork.title}">
+                    </div>
+                    <div class="artwork-info">
+                        <h3>${artwork.title}</h3>
+                        <p>${artwork.description}</p>
+                    </div>
+                `;
+            }
+
+            galleryGrid.appendChild(card);
+        });
     }
 
     function filterGallery(category) {
-        const galleryGrid = document.querySelector('.gallery-grid');
         const cards = document.querySelectorAll('.artwork-card');
         let hasVisibleCards = false;
+
+        // Pausar todos los videos
+        document.querySelectorAll('.artwork-video video').forEach(video => {
+            video.pause();
+            video.currentTime = 0;
+        });
 
         cards.forEach(card => {
             if (category === 'all' || card.dataset.category === category) {
@@ -185,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p>Obras en tinta en proceso de creación...</p>
                 </div>
             `;
-            galleryGrid.appendChild(placeholder);
+            document.querySelector('.gallery-grid').appendChild(placeholder);
         }
 
         // Update active filter button
@@ -217,10 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
             filterButtons.appendChild(button);
         });
 
-        // Add artwork cards
-        artworks.forEach(artwork => {
-            galleryGrid.appendChild(createArtworkCard(artwork));
-        });
+        createGallery();
     }
 
     // Smooth scroll for navigation links
