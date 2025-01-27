@@ -1,42 +1,12 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Navigation scroll effect
-    const nav = document.querySelector('.main-nav');
-
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 100) {
-            nav.classList.add('scrolled');
-        } else {
-            nav.classList.remove('scrolled');
-        }
-    });
-
-    // Mobile menu toggle
-    const menuToggle = document.querySelector('.menu-toggle');
-    const navLinks = document.querySelector('.nav-links');
-
-    menuToggle.addEventListener('click', () => {
-        menuToggle.classList.toggle('active');
-        navLinks.classList.toggle('active');
-        document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
-    });
-
-    // Close mobile menu when clicking a link
-    document.querySelectorAll('.nav-links a').forEach(link => {
-        link.addEventListener('click', () => {
-            menuToggle.classList.remove('active');
-            navLinks.classList.remove('active');
-            document.body.style.overflow = '';
-        });
-    });
-
-    // Initialize footer year
-    const currentYear = document.getElementById('currentYear');
-    if (currentYear) {
-        currentYear.textContent = new Date().getFullYear();
-    }
-
-    // All artwork data
-    const artworks = [
+// Configuración inicial
+const config = {
+    categories: {
+        all: 'Todos',
+        pinturas: 'Óleos',
+        '3d': '3D',
+        tinta: 'Tinta'
+    },
+    artworks: [
         // Video presentación
         {
             title: 'Obra Plástica I',
@@ -149,10 +119,12 @@ document.addEventListener('DOMContentLoaded', () => {
             image: '/images/projects/3dprinting/87368654_498661417692348_2165792891719385088_o.jpg',
             category: '3d'
         }
-    ];
+    ]
+};
 
-    // Optimizar carga de imágenes
-    function lazyLoadImage(img) {
+// Funciones de utilidad
+const utils = {
+    lazyLoadImage(img) {
         if ('loading' in HTMLImageElement.prototype) {
             // Usar lazy loading nativo si está disponible
             img.loading = 'lazy';
@@ -170,10 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             observer.observe(img);
         }
-    }
-
-    // Video handling
-    function handleVideo(videoElement) {
+    },
+    
+    handleVideo(videoElement) {
         const container = videoElement.closest('.artwork-video');
         
         // Loading state
@@ -221,72 +192,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         return videoElement;
-    }
+    },
 
-    // Gallery functionality
-    function createGallery() {
-        const galleryGrid = document.querySelector('.gallery-grid');
-        if (!galleryGrid) return;
-        
-        galleryGrid.innerHTML = '';
-
-        artworks.forEach(artwork => {
-            const card = document.createElement('div');
-            card.className = 'artwork-card';
-            card.dataset.category = artwork.category;
-
-            if (artwork.type === 'video') {
-                card.innerHTML = `
-                    <div class="artwork-video">
-                        <video 
-                            controls 
-                            preload="metadata"
-                            playsinline
-                            controlsList="nodownload"
-                            poster="/images/video-poster.jpg"
-                        >
-                            <source src="${artwork.videoUrl}" type="video/mp4">
-                            Tu navegador no soporta el elemento video.
-                        </video>
-                    </div>
-                    <div class="artwork-info">
-                        <h3>${artwork.title}</h3>
-                        <p>${artwork.description}</p>
-                    </div>
-                `;
-                const video = card.querySelector('video');
-                if (video) {
-                    handleVideo(video);
-                }
-            } else {
-                const imgSrc = artwork.image || '/images/placeholder.png';
-                card.innerHTML = `
-                    <div class="artwork-image">
-                        <img 
-                            src="/images/placeholder.png"
-                            data-src="${imgSrc}"
-                            alt="${artwork.title}"
-                            onerror="this.onerror=null; this.src='/images/placeholder.png';"
-                        >
-                    </div>
-                    <div class="artwork-info">
-                        <h3>${artwork.title}</h3>
-                        <p>${artwork.description}</p>
-                    </div>
-                `;
-                const img = card.querySelector('img');
-                if (img) {
-                    lazyLoadImage(img);
-                }
-            }
-
-            galleryGrid.appendChild(card);
-        });
-    }
-
-    // Manejar la reproducción de video
-    let currentVideo = null;
-    window.handleVideoPlay = function(videoElement) {
+    handleVideoPlay(videoElement) {
         // Si hay otro video reproduciéndose, lo pausamos
         if (currentVideo && currentVideo !== videoElement) {
             currentVideo.pause();
@@ -304,154 +212,244 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentVideo = null;
             }
         }, { once: true });
-    };
+    }
+};
 
-    // Limpiar recursos de video al cambiar de página o cerrar
-    window.addEventListener('beforeunload', function() {
-        if (currentVideo) {
-            currentVideo.pause();
-            currentVideo = null;
-        }
-    });
+// Clase principal para la galería
+class Gallery {
+    constructor() {
+        this.currentVideo = null;
+        this.init();
+    }
 
-    // Pausar video si el usuario cambia de pestaña
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden && currentVideo) {
-            currentVideo.pause();
-        }
-    });
+    init() {
+        this.setupNavigation();
+        this.setupMobileMenu();
+        this.setupFooterYear();
+        this.setupGallery();
+        this.setupBackToTop();
+        this.setupEventListeners();
+    }
 
-    // Manejar errores de video
-    window.addEventListener('error', (e) => {
-        if (e.target.tagName === 'VIDEO') {
-            console.error('Error loading video:', e.target.querySelector('source').src);
-            const videoContainer = e.target.closest('.artwork-video');
-            if (videoContainer) {
-                videoContainer.innerHTML = `
-                    <div class="video-error">
-                        <p>Error al cargar el video. Por favor, intenta más tarde.</p>
-                    </div>
-                `;
-            }
-        }
-    }, true);
-
-    // Manejar errores de carga
-    window.addEventListener('error', (e) => {
-        if (e.target.tagName === 'IMG') {
-            console.error('Error loading image:', e.target.dataset.src);
-            e.target.src = '/images/placeholder.png'; // Asegúrate de tener una imagen placeholder
-        }
-    }, true);
-
-    function filterGallery(category) {
-        const cards = document.querySelectorAll('.artwork-card');
-        let hasVisibleCards = false;
-
-        // Pausar todos los videos
-        document.querySelectorAll('.artwork-video video').forEach(video => {
-            video.pause();
-            video.currentTime = 0;
+    setupNavigation() {
+        const nav = document.querySelector('.main-nav');
+        window.addEventListener('scroll', () => {
+            requestAnimationFrame(() => {
+                nav.classList.toggle('scrolled', window.scrollY > 100);
+            });
         });
 
-        cards.forEach(card => {
-            if (category === 'all' || card.dataset.category === category) {
-                card.style.display = 'block';
-                hasVisibleCards = true;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-
-        // Remove existing placeholder if exists
-        const existingPlaceholder = document.querySelector('.empty-category-placeholder');
-        if (existingPlaceholder) {
-            existingPlaceholder.remove();
-        }
-
-        // Add placeholder for empty ink category
-        if (category === 'tinta' && !hasVisibleCards) {
-            const placeholder = document.createElement('div');
-            placeholder.className = 'empty-category-placeholder';
-            placeholder.innerHTML = `
-                <div class="placeholder-content">
-                    <i class="fas fa-pen-nib"></i>
-                    <h3>Próximamente</h3>
-                    <p>Obras en tinta en proceso de creación...</p>
-                </div>
-            `;
-            document.querySelector('.gallery-grid').appendChild(placeholder);
-        }
-
-        // Update active filter button
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.category === category);
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(anchor.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    // Close mobile menu if open
+                    const navLinks = document.querySelector('.nav-links');
+                    const menuToggle = document.querySelector('.menu-toggle');
+                    if (navLinks && menuToggle) {
+                        navLinks.classList.remove('active');
+                        menuToggle.classList.remove('active');
+                    }
+                }
+            });
         });
     }
 
-    // Initialize gallery
-    const galleryGrid = document.querySelector('.gallery-grid');
-    const filterButtons = document.querySelector('.filter-buttons');
+    setupMobileMenu() {
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navLinks = document.querySelector('.nav-links');
 
-    if (galleryGrid && filterButtons) {
-        // Add filter buttons
-        const categories = ['all', 'pinturas', '3d', 'tinta'];
-        const categoryNames = {
-            all: 'Todos',
-            pinturas: 'Óleos',
-            '3d': '3D',
-            tinta: 'Tinta'
-        };
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => {
+                menuToggle.classList.toggle('active');
+                navLinks.classList.toggle('active');
+                document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+            });
 
-        categories.forEach(category => {
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    menuToggle.classList.remove('active');
+                    navLinks.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+        }
+    }
+
+    setupFooterYear() {
+        const currentYear = document.getElementById('currentYear');
+        if (currentYear) {
+            currentYear.textContent = new Date().getFullYear();
+        }
+    }
+
+    setupGallery() {
+        const galleryGrid = document.querySelector('.gallery-grid');
+        const filterButtons = document.querySelector('.filter-buttons');
+        
+        if (!galleryGrid || !filterButtons) return;
+
+        // Crear botones de filtrado
+        Object.entries(config.categories).forEach(([category, name]) => {
             const button = document.createElement('button');
             button.className = 'filter-btn' + (category === 'all' ? ' active' : '');
             button.dataset.category = category;
-            button.textContent = categoryNames[category];
-            button.addEventListener('click', () => filterGallery(category));
+            button.textContent = name;
+            button.addEventListener('click', () => this.filterGallery(category));
             filterButtons.appendChild(button);
         });
 
-        createGallery();
+        this.createGallery(galleryGrid);
     }
 
-    // Smooth scroll for navigation links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth'
-                });
-                // Close mobile menu if open
-                navLinks.classList.remove('active');
-                menuToggle.classList.remove('active');
-            }
-        });
-    });
+    createGallery(galleryGrid) {
+        config.artworks.forEach(artwork => {
+            const card = document.createElement('div');
+            card.className = 'artwork-card';
+            card.dataset.category = artwork.category;
 
-    // Back to Top functionality
-    const backToTopButton = document.getElementById('back-to-top');
-    
-    function toggleBackToTop() {
-        if (window.scrollY > 300) {
-            backToTopButton.classList.add('visible');
-        } else {
-            backToTopButton.classList.remove('visible');
+            if (artwork.type === 'video') {
+                card.innerHTML = `
+                    <div class="artwork-video">
+                        <video preload="metadata" onclick="handleVideoPlay(this)">
+                            <source src="${artwork.videoUrl}" type="video/mp4">
+                        </video>
+                        <div class="video-overlay">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="artwork-info">
+                        <h3>${artwork.title}</h3>
+                        <p>${artwork.description}</p>
+                    </div>
+                `;
+                const video = card.querySelector('video');
+                if (video) {
+                    utils.handleVideo(video);
+                }
+            } else {
+                const imgSrc = artwork.image || '/images/placeholder.png';
+                card.innerHTML = `
+                    <div class="artwork-image">
+                        <img data-src="${imgSrc}" alt="${artwork.title}" />
+                    </div>
+                    <div class="artwork-info">
+                        <h3>${artwork.title}</h3>
+                        <p>${artwork.description}</p>
+                    </div>
+                `;
+                const img = card.querySelector('img');
+                if (img) {
+                    utils.lazyLoadImage(img);
+                }
+            }
+
+            galleryGrid.appendChild(card);
+        });
+    }
+
+    filterGallery(category) {
+        const cards = document.querySelectorAll('.artwork-card');
+        const buttons = document.querySelectorAll('.filter-btn');
+        let hasVisibleCards = false;
+
+        // Actualizar botones
+        buttons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.category === category);
+        });
+
+        // Filtrar tarjetas
+        cards.forEach(card => {
+            const shouldShow = category === 'all' || card.dataset.category === category;
+            card.style.display = shouldShow ? '' : 'none';
+            if (shouldShow) hasVisibleCards = true;
+        });
+
+        // Mostrar mensaje si no hay resultados
+        const noResults = document.querySelector('.no-results');
+        if (!hasVisibleCards) {
+            if (!noResults) {
+                const message = document.createElement('div');
+                message.className = 'no-results';
+                message.textContent = 'No se encontraron obras en esta categoría.';
+                cards[0].parentNode.appendChild(message);
+            }
+        } else if (noResults) {
+            noResults.remove();
         }
     }
 
-    window.addEventListener('scroll', toggleBackToTop);
-    
-    backToTopButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    });
+    setupBackToTop() {
+        const backToTopButton = document.getElementById('back-to-top');
+        if (!backToTopButton) return;
 
-    // Initial check for back to top button
-    toggleBackToTop();
-});
+        const toggleBackToTop = () => {
+            requestAnimationFrame(() => {
+                backToTopButton.classList.toggle('visible', window.scrollY > 300);
+            });
+        };
+
+        window.addEventListener('scroll', toggleBackToTop, { passive: true });
+        backToTopButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Comprobar la posición inicial
+        toggleBackToTop();
+    }
+
+    setupEventListeners() {
+        // Limpiar recursos de video al cambiar de página o cerrar
+        window.addEventListener('beforeunload', () => {
+            if (this.currentVideo) {
+                this.currentVideo.pause();
+            }
+        });
+
+        // Pausar video si el usuario cambia de pestaña
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && this.currentVideo) {
+                this.currentVideo.pause();
+            }
+        });
+
+        // Manejar errores de video
+        window.addEventListener('error', (e) => {
+            if (e.target.tagName === 'VIDEO') {
+                console.error('Error loading video:', e.target.querySelector('source').src);
+                const videoContainer = e.target.closest('.artwork-video');
+                if (videoContainer) {
+                    videoContainer.innerHTML = `
+                        <div class="video-error">
+                            <p>Error al cargar el video. Por favor, intenta más tarde.</p>
+                        </div>
+                    `;
+                }
+            }
+        }, true);
+
+        // Manejar errores de carga de imágenes
+        window.addEventListener('error', (e) => {
+            if (e.target.tagName === 'IMG') {
+                console.error('Error loading image:', e.target.dataset.src);
+                e.target.src = '/images/placeholder.png';
+            }
+        }, true);
+    }
+}
+
+// Inicializar la galería cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => new Gallery());
+} else {
+    new Gallery();
+}
