@@ -6,6 +6,7 @@ const config = {
         '3d': '3D',
         tinta: 'Tinta'
     },
+    placeholderImage: './images/placeholder.png',
     artworks: [
         // Video presentación
         {
@@ -125,17 +126,28 @@ const config = {
 // Funciones de utilidad
 const utils = {
     lazyLoadImage(img) {
+        // Establecer el placeholder inmediatamente
+        img.src = config.placeholderImage;
+
+        // Configurar el manejo de errores antes de cargar la imagen real
+        img.onerror = function() {
+            if (this.src !== config.placeholderImage) {
+                console.error('Error loading image:', this.dataset.src);
+                this.src = config.placeholderImage;
+            }
+            this.onerror = null; // Prevenir bucles infinitos
+        };
+
         if ('loading' in HTMLImageElement.prototype) {
-            // Usar lazy loading nativo si está disponible
             img.loading = 'lazy';
-            img.src = img.dataset.src;
+            const actualSrc = img.dataset.src.startsWith('/') ? '.' + img.dataset.src : img.dataset.src;
+            img.src = actualSrc;
         } else {
-            // Fallback a IntersectionObserver
-            const observer = new IntersectionObserver((entries) => {
+            const observer = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src;
+                        const actualSrc = img.dataset.src.startsWith('/') ? '.' + img.dataset.src : img.dataset.src;
+                        img.src = actualSrc;
                         observer.unobserve(img);
                     }
                 });
@@ -146,74 +158,61 @@ const utils = {
     
     handleVideo(videoElement) {
         const container = videoElement.closest('.artwork-video');
+        if (!container) return;
         
         // Loading state
-        container.classList.add('loading');
-        
-        // Remove loading state when metadata is loaded
-        videoElement.addEventListener('loadedmetadata', () => {
-            container.classList.remove('loading');
-        }, { once: true });
-
-        // Handle video errors
-        videoElement.addEventListener('error', (e) => {
-            console.error('Error loading video:', e);
-            container.innerHTML = `
-                <div class="video-error">
-                    <p>Error al cargar el video. Por favor, intenta más tarde.</p>
-                </div>
-            `;
-        }, { once: true });
-
-        // Clean up resources when video is not visible
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (!entry.isIntersecting && !videoElement.paused) {
-                    videoElement.pause();
-                }
+        const overlay = container.querySelector('.video-overlay');
+        if (overlay) {
+            videoElement.addEventListener('loadstart', () => {
+                overlay.classList.add('loading');
             });
-        }, {
-            threshold: 0.2
-        });
-        
-        observer.observe(videoElement);
-
-        // Pause video when switching tabs
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden && !videoElement.paused) {
-                videoElement.pause();
-            }
-        });
-
-        // Memory management
-        videoElement.addEventListener('pause', () => {
-            videoElement.removeAttribute('src');
-            videoElement.load();
-        });
+            
+            videoElement.addEventListener('canplay', () => {
+                overlay.classList.remove('loading');
+            });
+            
+            videoElement.addEventListener('error', (e) => {
+                console.error('Error loading video:', videoElement.querySelector('source')?.src);
+                container.innerHTML = `
+                    <div class="video-error">
+                        <p>Error al cargar el video. Por favor, intenta más tarde.</p>
+                    </div>
+                `;
+            });
+        }
 
         return videoElement;
     },
-
+    
     handleVideoPlay(videoElement) {
-        // Si hay otro video reproduciéndose, lo pausamos
-        if (currentVideo && currentVideo !== videoElement) {
-            currentVideo.pause();
-        }
-        currentVideo = videoElement;
+        if (!videoElement) return;
         
-        // Reducir la calidad del video si el dispositivo es móvil
-        if (window.innerWidth <= 768) {
-            videoElement.setAttribute('playbackQuality', 'low');
+        // Si hay otro video reproduciéndose, lo pausamos
+        if (window.currentVideo && window.currentVideo !== videoElement) {
+            window.currentVideo.pause();
+        }
+        window.currentVideo = videoElement;
+        
+        // Reproducir/Pausar el video
+        if (videoElement.paused) {
+            videoElement.play().catch(error => {
+                console.error('Error playing video:', error);
+            });
+        } else {
+            videoElement.pause();
         }
         
         // Liberar memoria cuando el video termina
         videoElement.addEventListener('ended', function() {
-            if (currentVideo === this) {
-                currentVideo = null;
+            if (window.currentVideo === this) {
+                window.currentVideo = null;
             }
         }, { once: true });
     }
 };
+
+// Exponer la función handleVideoPlay globalmente
+window.handleVideoPlay = utils.handleVideoPlay;
 
 // Clase principal para la galería
 class Gallery {
@@ -314,10 +313,11 @@ class Gallery {
             card.dataset.category = artwork.category;
 
             if (artwork.type === 'video') {
+                const videoUrl = artwork.videoUrl.startsWith('/') ? '.' + artwork.videoUrl : artwork.videoUrl;
                 card.innerHTML = `
                     <div class="artwork-video">
                         <video preload="metadata" onclick="handleVideoPlay(this)">
-                            <source src="${artwork.videoUrl}" type="video/mp4">
+                            <source src="${videoUrl}" type="video/mp4">
                         </video>
                         <div class="video-overlay">
                             <i class="fas fa-play"></i>
@@ -333,10 +333,14 @@ class Gallery {
                     utils.handleVideo(video);
                 }
             } else {
-                const imgSrc = artwork.image || '/images/placeholder.png';
+                const imgSrc = artwork.image.startsWith('/') ? '.' + artwork.image : artwork.image;
                 card.innerHTML = `
                     <div class="artwork-image">
-                        <img data-src="${imgSrc}" alt="${artwork.title}" />
+                        <img 
+                            src="${config.placeholderImage}" 
+                            data-src="${imgSrc}" 
+                            alt="${artwork.title}"
+                        />
                     </div>
                     <div class="artwork-info">
                         <h3>${artwork.title}</h3>
@@ -441,15 +445,199 @@ class Gallery {
         window.addEventListener('error', (e) => {
             if (e.target.tagName === 'IMG') {
                 console.error('Error loading image:', e.target.dataset.src);
-                e.target.src = '/images/placeholder.png';
+                e.target.src = config.placeholderImage;
             }
         }, true);
     }
 }
 
 // Inicializar la galería cuando el DOM esté listo
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => new Gallery());
-} else {
+document.addEventListener('DOMContentLoaded', () => {
+    // Configuración inicial
+    const config = {
+        placeholderImage: './images/placeholder.png',
+        artworks: [
+{{ ... }}
+        ]
+    };
+
+    // Funciones de utilidad
+    const utils = {
+        lazyLoadImage(img) {
+            // Establecer el placeholder inmediatamente
+            img.src = config.placeholderImage;
+
+            // Configurar el manejo de errores antes de cargar la imagen real
+            img.onerror = function() {
+                if (this.src !== config.placeholderImage) {
+                    console.error('Error loading image:', this.dataset.src);
+                    this.src = config.placeholderImage;
+                }
+                this.onerror = null; // Prevenir bucles infinitos
+            };
+
+            if ('loading' in HTMLImageElement.prototype) {
+                img.loading = 'lazy';
+                const actualSrc = img.dataset.src.startsWith('/') ? '.' + img.dataset.src : img.dataset.src;
+                img.src = actualSrc;
+            } else {
+                const observer = new IntersectionObserver(entries => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const actualSrc = img.dataset.src.startsWith('/') ? '.' + img.dataset.src : img.dataset.src;
+                            img.src = actualSrc;
+                            observer.unobserve(img);
+                        }
+                    });
+                });
+                observer.observe(img);
+            }
+        },
+
+        handleVideo(videoElement) {
+{{ ... }}
+        }
+    };
+
+    // Navigation scroll effect
+    const nav = document.querySelector('.main-nav');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 100) {
+            nav.classList.add('scrolled');
+        } else {
+            nav.classList.remove('scrolled');
+        }
+    });
+
+    // Mobile menu toggle
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+
+    menuToggle?.addEventListener('click', () => {
+        menuToggle.classList.toggle('active');
+        navLinks.classList.toggle('active');
+        document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+    });
+
+    // Close mobile menu when clicking a link
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            menuToggle.classList.remove('active');
+            navLinks.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    });
+
+    // Initialize footer year
+    const currentYear = document.getElementById('currentYear');
+    if (currentYear) {
+        currentYear.textContent = new Date().getFullYear();
+    }
+
+    // Gallery functionality
+    function createGallery() {
+        const galleryGrid = document.querySelector('.gallery-grid');
+        if (!galleryGrid) return;
+
+        config.artworks.forEach(artwork => {
+            const card = document.createElement('div');
+            card.className = 'artwork-card';
+            card.dataset.category = artwork.category;
+
+            if (artwork.type === 'video') {
+                const videoUrl = artwork.videoUrl.startsWith('/') ? '.' + artwork.videoUrl : artwork.videoUrl;
+                card.innerHTML = `
+                    <div class="artwork-video">
+                        <video preload="metadata" onclick="handleVideoPlay(this)">
+                            <source src="${videoUrl}" type="video/mp4">
+                        </video>
+                        <div class="video-overlay">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="artwork-info">
+                        <h3>${artwork.title}</h3>
+                        <p>${artwork.description}</p>
+                    </div>
+                `;
+                const video = card.querySelector('video');
+                if (video) {
+                    utils.handleVideo(video);
+                }
+            } else {
+                const imgSrc = artwork.image.startsWith('/') ? '.' + artwork.image : artwork.image;
+                card.innerHTML = `
+                    <div class="artwork-image">
+                        <img 
+                            src="${config.placeholderImage}" 
+                            data-src="${imgSrc}" 
+                            alt="${artwork.title}"
+                        />
+                    </div>
+                    <div class="artwork-info">
+                        <h3>${artwork.title}</h3>
+                        <p>${artwork.description}</p>
+                    </div>
+                `;
+                const img = card.querySelector('img');
+                if (img) {
+                    utils.lazyLoadImage(img);
+                }
+            }
+
+            galleryGrid.appendChild(card);
+        });
+    }
+
+    // Initialize gallery
+    const galleryGrid = document.querySelector('.gallery-grid');
+    const filterButtons = document.querySelector('.filter-buttons');
+
+    if (galleryGrid && filterButtons) {
+        // Add filter buttons
+        const categories = ['all', 'pinturas', '3d', 'tinta'];
+        const categoryNames = {
+            all: 'Todos',
+            pinturas: 'Óleos',
+            '3d': '3D',
+            tinta: 'Tinta'
+        };
+
+        categories.forEach(category => {
+            const button = document.createElement('button');
+            button.className = 'filter-btn' + (category === 'all' ? ' active' : '');
+            button.dataset.category = category;
+            button.textContent = categoryNames[category];
+            button.addEventListener('click', () => filterGallery(category));
+            filterButtons.appendChild(button);
+        });
+
+        createGallery();
+    }
+
+    // Back to Top functionality
+    const backToTopButton = document.getElementById('back-to-top');
+    
+    function toggleBackToTop() {
+        if (window.scrollY > 300) {
+            backToTopButton.classList.add('visible');
+        } else {
+            backToTopButton.classList.remove('visible');
+        }
+    }
+
+    window.addEventListener('scroll', toggleBackToTop);
+    
+    backToTopButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+
+    // Initial check for back to top button
+    toggleBackToTop();
+
     new Gallery();
-}
+});
