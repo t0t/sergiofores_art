@@ -123,9 +123,40 @@ const config = {
     ]
 };
 
-// Funciones de utilidad
-const utils = {
+class Gallery {
+    constructor() {
+        this.currentVideo = null;
+        this.scrollHandler = this.handleScroll.bind(this);
+        this.init();
+    }
+
+    init() {
+        this.setupNavigation();
+        this.setupMobileMenu();
+        this.setupFooterYear();
+        this.setupGallery();
+        this.setupBackToTop();
+        this.setupEventListeners();
+    }
+
+    handleScroll() {
+        requestAnimationFrame(() => {
+            const nav = document.querySelector('.main-nav');
+            const backToTopButton = document.getElementById('back-to-top');
+            
+            if (nav) {
+                nav.classList.toggle('scrolled', window.scrollY > 100);
+            }
+            
+            if (backToTopButton) {
+                backToTopButton.classList.toggle('visible', window.scrollY > 300);
+            }
+        });
+    }
+
     lazyLoadImage(img) {
+        if (!img) return;
+        
         // Establecer el placeholder inmediatamente
         img.src = config.placeholderImage;
 
@@ -154,90 +185,48 @@ const utils = {
             });
             observer.observe(img);
         }
-    },
-    
-    handleVideo(videoElement) {
-        const container = videoElement.closest('.artwork-video');
-        if (!container) return;
-        
-        // Loading state
-        const overlay = container.querySelector('.video-overlay');
-        if (overlay) {
-            videoElement.addEventListener('loadstart', () => {
-                overlay.classList.add('loading');
-            });
-            
-            videoElement.addEventListener('canplay', () => {
-                overlay.classList.remove('loading');
-            });
-            
-            videoElement.addEventListener('error', (e) => {
-                console.error('Error loading video:', videoElement.querySelector('source')?.src);
-                container.innerHTML = `
-                    <div class="video-error">
-                        <p>Error al cargar el video. Por favor, intenta más tarde.</p>
-                    </div>
-                `;
-            });
-        }
+    }
 
-        return videoElement;
-    },
-    
+    handleVideo(videoElement) {
+        if (!videoElement) return;
+        
+        videoElement.addEventListener('play', () => {
+            if (this.currentVideo && this.currentVideo !== videoElement) {
+                this.currentVideo.pause();
+            }
+            this.currentVideo = videoElement;
+        });
+
+        videoElement.addEventListener('pause', () => {
+            if (this.currentVideo === videoElement) {
+                this.currentVideo = null;
+            }
+        });
+    }
+
     handleVideoPlay(videoElement) {
         if (!videoElement) return;
         
-        // Si hay otro video reproduciéndose, lo pausamos
-        if (window.currentVideo && window.currentVideo !== videoElement) {
-            window.currentVideo.pause();
+        if (this.currentVideo && this.currentVideo !== videoElement) {
+            this.currentVideo.pause();
         }
-        window.currentVideo = videoElement;
-        
-        // Reproducir/Pausar el video
+
         if (videoElement.paused) {
-            videoElement.play().catch(error => {
-                console.error('Error playing video:', error);
-            });
+            videoElement.play();
+            const overlay = videoElement.parentElement.querySelector('.video-overlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
         } else {
             videoElement.pause();
-        }
-        
-        // Liberar memoria cuando el video termina
-        videoElement.addEventListener('ended', function() {
-            if (window.currentVideo === this) {
-                window.currentVideo = null;
+            const overlay = videoElement.parentElement.querySelector('.video-overlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
             }
-        }, { once: true });
-    }
-};
-
-// Exponer la función handleVideoPlay globalmente
-window.handleVideoPlay = utils.handleVideoPlay;
-
-// Clase principal para la galería
-class Gallery {
-    constructor() {
-        this.currentVideo = null;
-        this.init();
-    }
-
-    init() {
-        this.setupNavigation();
-        this.setupMobileMenu();
-        this.setupFooterYear();
-        this.setupGallery();
-        this.setupBackToTop();
-        this.setupEventListeners();
+        }
     }
 
     setupNavigation() {
-        const nav = document.querySelector('.main-nav');
-        window.addEventListener('scroll', () => {
-            requestAnimationFrame(() => {
-                nav.classList.toggle('scrolled', window.scrollY > 100);
-            });
-        });
-
         // Smooth scroll for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', (e) => {
@@ -307,6 +296,8 @@ class Gallery {
     }
 
     createGallery(galleryGrid) {
+        if (!galleryGrid) return;
+
         config.artworks.forEach(artwork => {
             const card = document.createElement('div');
             card.className = 'artwork-card';
@@ -316,7 +307,7 @@ class Gallery {
                 const videoUrl = artwork.videoUrl.startsWith('/') ? '.' + artwork.videoUrl : artwork.videoUrl;
                 card.innerHTML = `
                     <div class="artwork-video">
-                        <video preload="metadata" onclick="handleVideoPlay(this)">
+                        <video preload="metadata">
                             <source src="${videoUrl}" type="video/mp4">
                         </video>
                         <div class="video-overlay">
@@ -330,7 +321,8 @@ class Gallery {
                 `;
                 const video = card.querySelector('video');
                 if (video) {
-                    utils.handleVideo(video);
+                    this.handleVideo(video);
+                    video.addEventListener('click', () => this.handleVideoPlay(video));
                 }
             } else {
                 const imgSrc = artwork.image.startsWith('/') ? '.' + artwork.image : artwork.image;
@@ -349,7 +341,7 @@ class Gallery {
                 `;
                 const img = card.querySelector('img');
                 if (img) {
-                    utils.lazyLoadImage(img);
+                    this.lazyLoadImage(img);
                 }
             }
 
@@ -392,13 +384,6 @@ class Gallery {
         const backToTopButton = document.getElementById('back-to-top');
         if (!backToTopButton) return;
 
-        const toggleBackToTop = () => {
-            requestAnimationFrame(() => {
-                backToTopButton.classList.toggle('visible', window.scrollY > 300);
-            });
-        };
-
-        window.addEventListener('scroll', toggleBackToTop, { passive: true });
         backToTopButton.addEventListener('click', (e) => {
             e.preventDefault();
             window.scrollTo({
@@ -406,48 +391,21 @@ class Gallery {
                 behavior: 'smooth'
             });
         });
-
-        // Comprobar la posición inicial
-        toggleBackToTop();
     }
 
     setupEventListeners() {
-        // Limpiar recursos de video al cambiar de página o cerrar
+        // Un solo event listener para el scroll
+        window.addEventListener('scroll', this.scrollHandler, { passive: true });
+
+        // Limpiar recursos al cerrar
         window.addEventListener('beforeunload', () => {
             if (this.currentVideo) {
                 this.currentVideo.pause();
+                this.currentVideo = null;
             }
+            // Eliminar el event listener de scroll
+            window.removeEventListener('scroll', this.scrollHandler);
         });
-
-        // Pausar video si el usuario cambia de pestaña
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden && this.currentVideo) {
-                this.currentVideo.pause();
-            }
-        });
-
-        // Manejar errores de video
-        window.addEventListener('error', (e) => {
-            if (e.target.tagName === 'VIDEO') {
-                console.error('Error loading video:', e.target.querySelector('source').src);
-                const videoContainer = e.target.closest('.artwork-video');
-                if (videoContainer) {
-                    videoContainer.innerHTML = `
-                        <div class="video-error">
-                            <p>Error al cargar el video. Por favor, intenta más tarde.</p>
-                        </div>
-                    `;
-                }
-            }
-        }, true);
-
-        // Manejar errores de carga de imágenes
-        window.addEventListener('error', (e) => {
-            if (e.target.tagName === 'IMG') {
-                console.error('Error loading image:', e.target.dataset.src);
-                e.target.src = config.placeholderImage;
-            }
-        }, true);
     }
 }
 
