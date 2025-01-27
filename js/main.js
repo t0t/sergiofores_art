@@ -29,6 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Initialize footer year
+    const currentYear = document.getElementById('currentYear');
+    if (currentYear) {
+        currentYear.textContent = new Date().getFullYear();
+    }
+
     // All artwork data
     const artworks = [
         // Video presentación
@@ -36,118 +42,141 @@ document.addEventListener('DOMContentLoaded', () => {
             title: 'Obra Plástica I',
             description: 'Presentación Narrada',
             type: 'video',
-            videoUrl: 'videos/Sergio Forés - Obra Plástica I (Presentación Narrada).mp4',
+            videoUrl: '/videos/Sergio Forés - Obra Plástica I (Presentación Narrada).mp4',
             category: '3d'
         },
         // Óleos
         {
             title: 'Autoocultamiento',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/autoocultamiento.png',
+            image: '/images/projects/oil/autoocultamiento.png',
             category: 'pinturas'
         },
         {
             title: 'Beraja',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/beraja.png',
+            image: '/images/projects/oil/beraja.png',
             category: 'pinturas'
         },
         {
-            title: 'Luz',
+            title: 'Luz II',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/luz2.png',
+            image: '/images/projects/oil/luz2.png',
             category: 'pinturas'
         },
         {
-            title: 'Mente Acústica Literal',
+            title: 'Mente Acústica Literal I',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/menteacusticaliteral1.png',
-            category: 'pinturas'
-        },
-        {
-            title: 'Proceso I',
-            description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/proceso2.png',
+            image: '/images/projects/oil/menteacusticaliteral1.png',
             category: 'pinturas'
         },
         {
             title: 'Proceso II',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/proceso3.png',
+            image: '/images/projects/oil/proceso2.png',
+            category: 'pinturas'
+        },
+        {
+            title: 'Proceso III',
+            description: 'Óleo sobre lienzo',
+            image: '/images/projects/oil/proceso3.png',
             category: 'pinturas'
         },
         {
             title: 'Shejina',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/shejina.png',
+            image: '/images/projects/oil/shejina.png',
             category: 'pinturas'
         },
         {
-            title: 'Tres',
+            title: 'Tres I',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/tres1.png',
+            image: '/images/projects/oil/tres1.png',
             category: 'pinturas'
         },
         {
-            title: '291224',
+            title: '291224a',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/291224a.png',
+            image: '/images/projects/oil/291224a.png',
             category: 'pinturas'
         },
         {
-            title: '2911',
+            title: '2911a',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/2911a.png',
+            image: '/images/projects/oil/2911a.png',
             category: 'pinturas'
         },
         // 3D Prints
         {
             title: 'Escultura Digital 1',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/IMG_0864.JPG',
+            image: '/images/projects/3dprinting/IMG_0864.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 2',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/IMG_0869.JPG',
+            image: '/images/projects/3dprinting/IMG_0869.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 3',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/IMG_0943.jpg',
+            image: '/images/projects/3dprinting/IMG_0943.jpg',
             category: '3d'
         },
         {
             title: 'Escultura Digital 4',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/IMG_7883.JPG',
+            image: '/images/projects/3dprinting/IMG_7883.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 5',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/IMG_8631.JPG',
+            image: '/images/projects/3dprinting/IMG_8631.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 6',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/3955C791-B166-42B0-AA5B-065B6CBC2DC0.JPG',
+            image: '/images/projects/3dprinting/3955C791-B166-42B0-AA5B-065B6CBC2DC0.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 7',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/87368654_498661417692348_2165792891719385088_o.jpg',
+            image: '/images/projects/3dprinting/87368654_498661417692348_2165792891719385088_o.jpg',
             category: '3d'
         }
     ];
 
+    // Optimizar carga de imágenes
+    function lazyLoadImage(img) {
+        if ('loading' in HTMLImageElement.prototype) {
+            // Usar lazy loading nativo si está disponible
+            img.loading = 'lazy';
+            img.src = img.dataset.src;
+        } else {
+            // Fallback a IntersectionObserver
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        observer.unobserve(img);
+                    }
+                });
+            });
+            observer.observe(img);
+        }
+    }
+
     // Gallery functionality
     function createGallery() {
         const galleryGrid = document.querySelector('.gallery-grid');
+        if (!galleryGrid) return;
+        
         galleryGrid.innerHTML = '';
 
         artworks.forEach(artwork => {
@@ -158,7 +187,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (artwork.type === 'video') {
                 card.innerHTML = `
                     <div class="artwork-video">
-                        <video controls preload="metadata">
+                        <video 
+                            controls 
+                            preload="metadata"
+                            playsinline
+                            controlsList="nodownload"
+                            onplay="handleVideoPlay(this)"
+                        >
                             <source src="${artwork.videoUrl}" type="video/mp4">
                             Tu navegador no soporta el elemento video.
                         </video>
@@ -169,20 +204,90 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             } else {
+                const imgSrc = artwork.image || '/images/placeholder.png';
                 card.innerHTML = `
                     <div class="artwork-image">
-                        <img src="${artwork.image}" alt="${artwork.title}">
+                        <img 
+                            src="/images/placeholder.png"
+                            data-src="${imgSrc}"
+                            alt="${artwork.title}"
+                            onerror="this.onerror=null; this.src='/images/placeholder.png';"
+                        >
                     </div>
                     <div class="artwork-info">
                         <h3>${artwork.title}</h3>
                         <p>${artwork.description}</p>
                     </div>
                 `;
+                const img = card.querySelector('img');
+                if (img) {
+                    lazyLoadImage(img);
+                }
             }
 
             galleryGrid.appendChild(card);
         });
     }
+
+    // Manejar la reproducción de video
+    let currentVideo = null;
+    window.handleVideoPlay = function(videoElement) {
+        // Si hay otro video reproduciéndose, lo pausamos
+        if (currentVideo && currentVideo !== videoElement) {
+            currentVideo.pause();
+        }
+        currentVideo = videoElement;
+        
+        // Reducir la calidad del video si el dispositivo es móvil
+        if (window.innerWidth <= 768) {
+            videoElement.setAttribute('playbackQuality', 'low');
+        }
+        
+        // Liberar memoria cuando el video termina
+        videoElement.addEventListener('ended', function() {
+            if (currentVideo === this) {
+                currentVideo = null;
+            }
+        }, { once: true });
+    };
+
+    // Limpiar recursos de video al cambiar de página o cerrar
+    window.addEventListener('beforeunload', function() {
+        if (currentVideo) {
+            currentVideo.pause();
+            currentVideo = null;
+        }
+    });
+
+    // Pausar video si el usuario cambia de pestaña
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden && currentVideo) {
+            currentVideo.pause();
+        }
+    });
+
+    // Manejar errores de video
+    window.addEventListener('error', (e) => {
+        if (e.target.tagName === 'VIDEO') {
+            console.error('Error loading video:', e.target.querySelector('source').src);
+            const videoContainer = e.target.closest('.artwork-video');
+            if (videoContainer) {
+                videoContainer.innerHTML = `
+                    <div class="video-error">
+                        <p>Error al cargar el video. Por favor, intenta más tarde.</p>
+                    </div>
+                `;
+            }
+        }
+    }, true);
+
+    // Manejar errores de carga
+    window.addEventListener('error', (e) => {
+        if (e.target.tagName === 'IMG') {
+            console.error('Error loading image:', e.target.dataset.src);
+            e.target.src = '/images/placeholder.png'; // Asegúrate de tener una imagen placeholder
+        }
+    }, true);
 
     function filterGallery(category) {
         const cards = document.querySelectorAll('.artwork-card');

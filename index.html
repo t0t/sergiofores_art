@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Sergio Fores - Portfolio Creativo</title>
-    <script>
-        // Detectar si estamos en GitHub Pages
-        if (window.location.hostname.includes('github.io')) {
-            document.write('<base href="/sergiofores_art/">');
-        }
-    </script>
+    
+    <!-- Preconexiones para recursos externos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Recursos locales -->
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <link rel="icon" type="image/x-icon" href="./favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+    
+    <!-- Estilos -->
     <link rel="stylesheet" href="./css/styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
 </head>
@@ -70,7 +72,7 @@
             <h2>Contacto</h2>
             <p>¿Interesado en mi trabajo? Contáctame a través de:</p>
             <div class="social-links">
-                <a href="https://instagram.com/sergiofores.art" target="_blank" rel="noopener noreferrer">
+                <a href="https://instagram.com/sergio.01234" target="_blank" rel="noopener noreferrer">
                     <i class="fab fa-instagram"></i>
                     @sergio.01234
                 </a>
@@ -79,10 +81,6 @@
         </div>
     </footer>
 
-    <script type="module" src="./js/main.js"></script>
-    <script>
-        const currentYear = document.getElementById('currentYear');
-        currentYear.textContent = new Date().getFullYear();
-    </script>
+    <script type="module" src="./js/main.js" defer></script>
 </body>
 </html>
