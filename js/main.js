@@ -35,104 +35,104 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             title: 'Autoocultamiento',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/autoocultamiento.png',
+            image: './images/projects/oil/autoocultamiento.png',
             category: 'pinturas'
         },
         {
             title: 'Beraja',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/beraja.png',
+            image: './images/projects/oil/beraja.png',
             category: 'pinturas'
         },
         {
             title: 'Luz',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/luz2.png',
+            image: './images/projects/oil/luz2.png',
             category: 'pinturas'
         },
         {
             title: 'Mente Acústica Literal',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/menteacusticaliteral1.png',
+            image: './images/projects/oil/menteacusticaliteral1.png',
             category: 'pinturas'
         },
         {
             title: 'Proceso I',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/proceso2.png',
+            image: './images/projects/oil/proceso2.png',
             category: 'pinturas'
         },
         {
             title: 'Proceso II',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/proceso3.png',
+            image: './images/projects/oil/proceso3.png',
             category: 'pinturas'
         },
         {
             title: 'Shejina',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/shejina.png',
+            image: './images/projects/oil/shejina.png',
             category: 'pinturas'
         },
         {
             title: 'Tres',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/tres1.png',
+            image: './images/projects/oil/tres1.png',
             category: 'pinturas'
         },
         {
             title: '291224',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/291224a.png',
+            image: './images/projects/oil/291224a.png',
             category: 'pinturas'
         },
         {
             title: '2911',
             description: 'Óleo sobre lienzo',
-            image: 'images/projects/oil/2911a.png',
+            image: './images/projects/oil/2911a.png',
             category: 'pinturas'
         },
         // 3D Prints
         {
             title: 'Escultura Digital 1',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/IMG_0864.JPG',
+            image: './images/projects/3dprinting/IMG_0864.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 2',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/IMG_0869.JPG',
+            image: './images/projects/3dprinting/IMG_0869.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 3',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/IMG_0943.jpg',
+            image: './images/projects/3dprinting/IMG_0943.jpg',
             category: '3d'
         },
         {
             title: 'Escultura Digital 4',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/IMG_7883.JPG',
+            image: './images/projects/3dprinting/IMG_7883.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 5',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/IMG_8631.JPG',
+            image: './images/projects/3dprinting/IMG_8631.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 6',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/3955C791-B166-42B0-AA5B-065B6CBC2DC0.JPG',
+            image: './images/projects/3dprinting/3955C791-B166-42B0-AA5B-065B6CBC2DC0.JPG',
             category: '3d'
         },
         {
             title: 'Escultura Digital 7',
             description: 'Impresión 3D en PLA',
-            image: 'images/projects/3dprinting/87368654_498661417692348_2165792891719385088_o.jpg',
+            image: './images/projects/3dprinting/87368654_498661417692348_2165792891719385088_o.jpg',
             category: '3d'
         }
     ];
